@@ -21,17 +21,18 @@ except ImportError:
 
 
 class Foo(models.Model):
-    a = models.CharField(max_length=10)
-    d = models.DecimalField(max_digits=5, decimal_places=3)
+    a = models.CharField(max_length=10,default='a')
+    d = models.DecimalField(max_digits=5, decimal_places=3,default=1)
 
 
 def get_foo():
+    Foo.objects.get_or_create(id=1)
     return Foo.objects.get(id=1)
 
 
 class Bar(models.Model):
     b = models.CharField(max_length=10)
-    a = models.ForeignKey(Foo, default=get_foo, related_name=b'bars')
+    a = models.ForeignKey(Foo, default=get_foo, related_name=b'bars', null=True)
 
 
 class Whiz(models.Model):
