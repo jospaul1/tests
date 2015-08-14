@@ -252,7 +252,8 @@ class UUIDPKParent(models.Model):
 
 
 class UUIDPKChild(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    myuuid=uuid.uuid4.__str__()
+    uuid = models.UUIDField(primary_key=True, default=myuuid, editable=False)
     name = models.CharField(max_length=255)
     parent = models.ForeignKey(UUIDPKParent)
 
