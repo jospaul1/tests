@@ -260,7 +260,7 @@ class Inventory(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=40)
-    author = models.ForeignKey(Writer, blank=True, null=True)
+    author = models.ForeignKey(Writer, blank=True)
     special_id = models.IntegerField(blank=True, null=True, unique=True)
 
     class Meta:
