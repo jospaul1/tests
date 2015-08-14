@@ -273,13 +273,15 @@ class AutoPKParent(models.Model):
 
 
 class UUIDPKChildOfAutoPKParent(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    myuuid=uuid.uuid4.__str__()
+    uuid = models.UUIDField(primary_key=True, default=myuuid, editable=False)
     name = models.CharField(max_length=255)
     parent = models.ForeignKey(AutoPKParent)
 
 
 class ParentWithUUIDAlternateKey(models.Model):
-    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    myuuid=uuid.uuid4.__str__()
+    uuid = models.UUIDField(unique=True, default=myuuid, editable=False)
     name = models.CharField(max_length=50)
 
 
