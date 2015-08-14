@@ -371,7 +371,8 @@ class NullableUUIDModel(models.Model):
 
 
 class PrimaryKeyUUIDModel(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    myuuid=uuid.uuid4().__str__()
+    id = models.UUIDField(primary_key=True, default=myuuid)
 
 
 class RelatedToUUIDModel(models.Model):
