@@ -246,7 +246,8 @@ class Post(models.Model):
 
 # Models for testing UUID primary keys
 class UUIDPKParent(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    myuuid=uuid.uuid4.__str__()
+    uuid = models.UUIDField(primary_key=True, default=myuuid, editable=False)
     name = models.CharField(max_length=255)
 
 
