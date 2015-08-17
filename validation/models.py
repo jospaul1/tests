@@ -110,7 +110,7 @@ class GenericIPAddressTestModel(models.Model):
 
 
 class GenericIPAddrUnpackUniqueTest(models.Model):
-    generic_v4unpack_ip = models.GenericIPAddressField(null=True, blank=True, unique=True, unpack_ipv4=True)
+    generic_v4unpack_ip = models.GenericIPAddressField( blank=True, unique=True, unpack_ipv4=True)
 
 
 # A model can't have multiple AutoFields
