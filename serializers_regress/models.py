@@ -196,7 +196,7 @@ class M2MIntermediateData(models.Model):
 class Intermediate(models.Model):
     left = models.ForeignKey(M2MIntermediateData)
     right = models.ForeignKey(Anchor)
-    extra = models.CharField(max_length=30, blank=True, default="doesn't matter")
+    extra = models.CharField(max_length=30, blank=True, default="doesn''t matter")
 
 # The following test classes are for validating the
 # deserialization of objects that use a user-defined
