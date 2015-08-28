@@ -1,0 +1,206 @@
+1) make modification in regressiontests/model_fields/models.py  DONE
+	in class BigD() set max_digit to 31 and decimal_places to 28
+	
+	In 1.8 this is in tests\model_fields
+
+2) initial_data.json file needed to be added to  tests\modeltests\aggregation\fixtures
+
+3) initial_data.json @ tests\regressiontests\aggregation_regress/fixtures
+
+4) regressiontests\many_to_one_regress
+        in class car  remove null=True, Does not exist
+   regressiontests/m2m_through_regress  DONE
+        in class Car and Driver  remove null=True, since we change nullable unique key to unique index with 
+one generated column
+
+5) site-packages/django/contrib/auth/management/__init__.py   (For Django-1.6 onwards)
+   @line # 104
+	print "Added permissions on :"
+        print perms
+        #for perm in perms:
+        #    print("Adding permission '%s'" % perm)
+		
+		*******************
+
+6) .../tests/inspectdb/models.py (DB2 doesn't support unicoded column name)
+ changes non ascii column name in SpecialName class to 'tamaxf1o'
+ and changes in .../tests/inspectdb/test.py's test_special_column_name_introspection test method do  change [ "if PY3"] condition to ["if PY3 or (connection.vendor == 'DB2')"] and "tamaxf1o = models.IntegerField()"
+ if PY3 or (connection.vendor == 'DB2'):
+            # Python 3 allows non-ASCII identifiers
+            self.assertIn("tamaxflo = models.IntegerField()", output)
+        else:
+
+7) In inspectdb/tests.py in test_special_column_name_introspection method
+ change [base_name = 'Field' if connection.vendor != 'oracle' else 'field'] to [base_name = 'Field' if connection.vendor not in ('oracle', 'DB2') else 'field'] //not able to find 
+and [if PY3:] to [if PY3 or (connection.vendor == 'DB2'):]//DONE
+
+
+8) For USE_I18N=True gettext is mandatory  NOT_DONE
+   For USE_TZ=True pytz is preferred
+                                                        
+9) In admin_views model DONE
+skip test cases under admin_views.tests.AdminViewDeletedObjectsTest by adding  @unittest.skipUnless(connection.features.can_defer_constraint_checks, "DB2 doesn't support defer constraint check under a trasaction")
+
+10) In serializers model: EXISTS
+ skip test cases test_forward_refs by adding @skipUnlessDBFeature('supports_forward_references') to test_forward_refs() method
+"skipUnlessDBFeature is defined in django.test"
+
+11) In serializers_regress model: DONE
+skip test cases under serializerTest since it requirs to be disable constraint checks
+add "@unittest.skipUnless(connection.features.can_defer_constraint_checks, "DB2 doesn't support defer constraint check under a trasaction")
+
+12) In test_runner model: DONE
+modify test case test_runner_deprecation_verbosity_zero() and change '''args = ['test', '--settings=settings', '--verbosity=0']''' to '''args = ['test', '--settings=test_project.settings', '--verbosity=0']'''
+Since settings is the DB2 settings file and it require user input to create test database or not, so It will wait for infinite time for this
+
+13) In custom_lookups model:DONE
+ modify tests.py/Div3Lookup's as_sql method and add following code snippet before return statement
+'''
+if connection.vendor == 'DB2':
+            return 'mod(%s, 3) = %s' % (lhs, rhs), params
+'''
+modify Div3Transform's as_sql method and add following code snippet before return statement
+'''
+if connection.vendor == 'DB2':
+            return 'mod(%s, 3)' % lhs, lhs_params
+'''
+
+14) In fixtures_regress model :Exists
+ skip forward refrence test cases since DB2 doesn't supports it
+	i) test_loaddata_works_when_fixture_has_forward_refs
+	ii) test_loaddata_forward_refs_split_fixtures
+	By adding @skipUnlessDBFeature('supports_forward_references')
+	
+15.expensive_calculation.num_runs=0  DONE
+Added above line in cache/model.py Poll class.
+ question = models.CharField(max_length=200)
+    answer = models.CharField(max_length=200)
+    expensive_calculation.num_runs=0
+    pub_date = models.DateTimeField('date published', default=expensive_calculation)
+	
+16 .greatest_fan = models.ForeignKey("Fan", null=False, unique=True)
+
+greatest_fan was nullable and primarykey .
+this is made non-nullable
+
+17 .forms_tests 
+class ChoiceFieldModel(models.Model):
+
+Change folling line 
+ choice = models.ForeignKey(ChoiceOptionModel, blank=False,
+                               default=lambda: ChoiceOptionModel.objects.get(name='default'))
+							   
+To
+ choice = models.ForeignKey(ChoiceOptionModel, blank=False,
+                               default=lambda: 1)
+							   
+18.i18n  
+default='Anything' is iniatiaized as below .
+class TestModel(models.Model):
+    text = models.CharField(max_length=10, default='Anything')
+19.model_fields/model.py ,uuid need to be converted to string
+class PrimaryKeyUUIDModel(models.Model):
+    myuuid=uuid.uuid4().__str__()
+    id = models.UUIDField(primary_key=True, default=myuuid)
+20.model_forms/model.py ,unique field cannot be null ,removed null=True
+class Author(models.Model):
+    publication = models.OneToOneField(Publication, blank=True)
+    full_name = models.CharField(max_length=255)
+21 .model_formssets/model.py
+BookWithOptionalAltEditor
+alt_editor field cannot be null ,removed null=True
+22.model_formssets/model.py  ,uuid.uuid4() need to be converted to string
+class UUIDPKParent(models.Model):
+    myuuid=uuid.uuid4.__str__()
+    uuid = models.UUIDField(primary_key=True, default=myuuid, editable=False)
+    name = models.CharField(max_length=255)
+23.model_formssets/model.py uuid.uuid4 need to convert to string
+class UUIDPKChild(models.Model):
+    myuuid=uuid.uuid4.__str__()
+    uuid = models.UUIDField(primary_key=True, default=myuuid, editable=False)
+    name = models.CharField(max_length=255)
+    parent = models.ForeignKey(UUIDPKParent)
+24.uuid.uuid4 need to convert to string
+class UUIDPKChildOfAutoPKParent(models.Model):
+    myuuid=uuid.uuid4.__str__()
+    uuid = models.UUIDField(primary_key=True, default=myuuid, editable=False)
+    name = models.CharField(max_length=255)
+    parent = models.ForeignKey(AutoPKParent)
+
+
+class ParentWithUUIDAlternateKey(models.Model):
+    myuuid=uuid.uuid4.__str__()
+    uuid = models.UUIDField(unique=True, default=myuuid, editable=False)
+    name = models.CharField(max_length=50)
+	
+25.place cannot ne null .removed null=True
+class UndergroundBar(models.Model):
+    place = models.OneToOneField(Place)
+    serves_cocktails = models.BooleanField(default=True)
+	
+26.null== true removed from  main_room = models.OneToOneField('Room', related_name='main_room_of')
+class House(models.Model):
+    name = models.CharField(max_length=50)
+    address = models.CharField(max_length=255)
+    owner = models.ForeignKey('Person', null=True)
+    main_room = models.OneToOneField('Room', related_name='main_room_of')
+	
+27.class Pet(models.Model):uuid.uuid4 need to be converted to string
+    myuuid=uuid.uuid4.__str__()
+    id = models.UUIDField(primary_key=True, default=myuuid, editable=False)
+    name = models.CharField(max_length=20)
+    people = models.ManyToManyField(Person, related_name='pets')
+
+
+28.class Flea(models.Model):uuid.uuid4 need to be converted to string
+    myuuid=uuid.uuid4.__str__()
+    id = models.UUIDField(primary_key=True, default=myuuid, editable=False)
+    current_room = models.ForeignKey(Room, related_name='fleas', null=True)
+    pets_visited = models.ManyToManyField(Pet, related_name='fleas_hosted')
+    people_visited = models.ManyToManyField(Person, related_name='fleas_hosted')
+	
+29., null=True is removed from image field
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    image = models.OneToOneField(Image)
+30.serializers_regress added single quotes to "doesn''t matter" ,this is to escape already existing single quotes.
+class Intermediate(models.Model):
+    left = models.ForeignKey(M2MIntermediateData)
+    right = models.ForeignKey(Anchor)
+    extra = models.CharField(max_length=30, blank=True, default="doesn''t matter")
+	
+31.VALIDATION_GENERICIPADDRESSTESTMODEL generic_ip is unique ,so cannot be null removed null=True,
+class GenericIPAddressTestModel(models.Model):
+    generic_ip = models.GenericIPAddressField(blank=True,  unique=True)
+    v4_ip = models.GenericIPAddressField(blank=True, null=True, protocol="ipv4")
+    v6_ip = models.GenericIPAddressField(blank=True, null=True, protocol="ipv6")
+    ip_verbose_name = models.GenericIPAddressField("IP Address Verbose",
+            blank=True, null=True)
+32.generic_v4unpack_ip cannot be null
+class GenericIPAddrUnpackUniqueTest(models.Model):
+    generic_v4unpack_ip = models.GenericIPAddressField( blank=True, unique=True, unpack_ipv4=True)
+33.serializers/model.py
+class TeamField(models.CharField):
+Added following code to method
+        try:
+            del kwargs['default']
+        except Exception: 
+            pass  
+  This is done because ,'default' get constructed and need to ge distructed 
+    def deconstruct(self):
+        name, path, args, kwargs = super(TeamField, self).deconstruct()
+        del kwargs['max_length']  
+        try:
+            del kwargs['default']
+        except Exception: 
+            pass  
+        
+        return name, path, args, kwargs
+
+
+
+
+
+
+
+
